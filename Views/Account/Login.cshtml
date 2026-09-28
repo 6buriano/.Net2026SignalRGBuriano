@@ -1,0 +1,45 @@
+@{
+    ViewData["Title"] = "Esperando Verificación";
+    string idUsuario = ViewBag.IdUsuario;
+}
+
+<div class="text-center mt-5">
+    <h2>Esperando Verificación de Correo</h2>
+    <p>Hemos enviado un correo a tu cuenta. Por favor haz clic en el enlace para continuar.</p>
+    
+    <div class="spinner-border text-primary my-3" role="status">
+        <span class="visually-hidden">Cargando...</span>
+    </div>
+
+    <hr />
+    <p class="text-muted">Para probar el ejercicio, abre otra pestaña e ingresa a:</p>
+    <a href="/Account/VerificarEmail?idUsuario=@idUsuario" target="_blank" class="btn btn-outline-success">
+        Simular clic en el Email de Verificación
+    </a>
+</div>
+
+<!-- Librería de SignalR desde CDN -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
+
+<script>
+    const idUsuario = "@idUsuario";
+
+    // 1. Crear conexión con el Hub
+    const connection = new signalR.HubConnectionBuilder()
+        .withUrl("/loginHub")
+        .build();
+
+    // 2. Escuchar el evento del servidor "UsuarioVerificado"
+    connection.on("UsuarioVerificado", function (urlRedireccion) {
+        alert("¡Correo verificado con éxito! Redirigiendo...");
+        window.location.href = urlRedireccion;
+    });
+
+    // 3. Iniciar la conexión y unirse al grupo específico de este usuario
+    connection.start().then(function () {
+        console.log("Conectado a SignalR Hub");
+        connection.invoke("RegistrarEsperaVerificacion", idUsuario);
+    }).catch(function (err) {
+        return console.error(err.toString());
+    });
+</script>
